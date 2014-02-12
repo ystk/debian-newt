@@ -1,3 +1,114 @@
+newt (0.52.14-11.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * python-newt-dbg.preinst: Handle symlink to directory conversion. (Closes:
+    #700781)
+
+ -- Sebastian Ramacher <sramacher@debian.org>  Mon, 25 Feb 2013 19:58:40 +0100
+
+newt (0.52.14-11) unstable; urgency=low
+
+  * Add Latvian translation. Closes: #674705.
+  * Close bugs fixed in -9: Closes: #670039. Closes: #670012. Closes: #658319.
+  * Don't override hardened CFLAGS. Closes: #658430.
+  * Updated welsh translation. Closes: #677458.
+  * Updated Lithuanian translation. Closes: #675678.
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Fri, 15 Jun 2012 12:52:00 +0100
+
+newt (0.52.14-10) unstable; urgency=low
+
+  * Fix: whiptail gave incorrect result for ESC pressed when NO selected.
+    Closes: #665784. 
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Wed, 16 May 2012 12:30:04 +0100
+
+newt (0.52.14-9) unstable; urgency=low
+
+  * Add debian/watch file.
+  * Standard-Version: 3.9.3. No changes required. 
+  * Correct packages marked: Multiarch: same. translation .mo files are not
+    multiarch safe Closes: #670012, #670039.
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Fri, 20 Apr 2012 00:22:52 +0100
+
+newt (0.52.14-8) unstable; urgency=low
+
+  *  Fix thanks to Kris Henriksson for snackmodule build. Closes: #655151.
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Sun, 29 Jan 2012 14:59:30 +0000
+
+newt (0.52.14-7) unstable; urgency=low
+
+  * Snackmodule.* must be compiled -fPIC on AMD64, etc. Closes: #655151. 
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Fri, 13 Jan 2012 14:20:33 +0000
+
+newt (0.52.14-6) unstable; urgency=low
+
+  * Edit pkg-config --libs, --ldflags lines to ensure python shared objects 
+    are not linkead against libpython. Closes: #655244.
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Mon, 09 Jan 2012 17:49:24 +0000
+
+newt (0.52.14-5) unstable; urgency=low
+
+  * Typo in patch: extra "+" leads to failure to install snackmodule
+    in some cases. Closes: #655151.
+  * Remove unnecessary dependencies on libpython* in python-newt that
+    were blocking python2.6 upgade.
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Mon, 09 Jan 2012 16:08:28 +0000
+
+newt (0.52.14-4) unstable; urgency=low
+
+  * Fix crash due to blankline() in textbox being initialised in the 
+    wrong place in refactored bid patch. Closes: #654408, #654351. 
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Tue, 03 Jan 2012 16:56:33 +0000
+
+newt (0.52.14-3) unstable; urgency=low
+
+  * Push to unstable.
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Sun, 01 Jan 2012 15:54:01 +0000
+
+newt (0.52.14-2) experimental; urgency=low
+
+  * bidi.patch: Add -ldl direct linkage for libnewt.so. Closes: #600289. 
+  * One call newtInit() once in python newt initScreen(). Closes: #557960. 
+  * Fix crash due to blankline being empty in textboxDraw.
+    Closes: #650845. 
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Sun, 04 Dec 2011 02:34:47 +0000
+
+newt (0.52.14-1) experimental; urgency=low
+
+  * New upstream release. Closes: #601516.
+  * Move to dh and source format 3 (quilt), from dbs. Closes: #576044.
+  * Move to python2 from python_central. Closes: #616915.
+  * Make Multi-Arch.
+  * Standards-Version: 3.9.2. 
+  * Remove obsolete conflicts / replaces/ provides from control file. 
+  * Uighir translation by Sahran <Sahran.ug@gmail.com>. Closes: #627014.
+  * Sinhala translation by Danishka Navin. Closes: #640766.
+  * Old Patches:
+    - Added DEP-3 headers.
+    - removed Farsi lang patch now in upstream.
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Sat, 03 Dec 2011 10:56:05 +0000
+
+newt (0.52.11-2) unstable; urgency=low
+
+  * Icelandic translation thanks to  Sveinn í Felli. Closes: #3600258, #592828. 
+  * Farsi patch translation thanks to  Behrad Eslamifar. Closes: #590698.	
+  * Belarussian translation thanks to  Viktar Siarheichyk. Closes: #595938.
+  * Kazakh translation thanks to Baurzhan Muftakhidinov. Closes: #589007.
+  * Irish translation thanks to Kevin Scannell. Closes: #579198.
+  * Standards-Version: 3.9.1. No changes required.
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Sat, 16 Oct 2010 15:10:47 +0100
+
 newt (0.52.11-1) unstable; urgency=low
 
   * New upstream. Closes: #575561. 

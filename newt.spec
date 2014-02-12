@@ -1,12 +1,12 @@
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 Summary: A library for text mode user interfaces
 Name: newt
-Version: 0.52.11
-Release: 2%{?dist}
+Version: 0.52.14
+Release: 1%{?dist}
 License: LGPLv2
 Group: System Environment/Libraries
 URL: https://fedorahosted.org/newt/
-Source: https://fedorahosted.org/releases/n/e/newt/newt-%{version}.tar.gz
+Source: https://fedorahosted.org/released/newt/newt-%{version}.tar.gz
 BuildRequires: popt-devel python-devel slang-devel
 BuildRequires: docbook-utils
 Provides: snack = %{version}-%{release}
@@ -68,7 +68,7 @@ docbook2txt tutorial.sgml
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make instroot=$RPM_BUILD_ROOT install
+make DESTDIR=$RPM_BUILD_ROOT install
 
 %find_lang %{name}
 
@@ -104,6 +104,41 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitearch}/*.py*
 
 %changelog
+* Fri Nov 11 2011 Miroslav Lichvar <mlichvar@redhat.com> - 0.52.14-1
+- fix returning strings in whiptail and whiptcl (#752818)
+- fix configure to work with multiple python versions (#737998)
+
+* Mon Jun 27 2011 Miroslav Lichvar <mlichvar@redhat.com> - 0.52.13-1
+- add support for changing colors in individual labels, scrollbars, entries,
+  textboxes and scales, add custom colorsets 
+- add support for NEWT_COLORS and NEWT_COLORS_FILE variables (#689903)
+- allow resizing of form
+- fix errors found by coverity
+- fix va_list usage (Gwenole Beauchesne)
+- fix building and installing on Mac OS X (#652479)
+- check for slang.h header, support DESTDIR variable, add --without-python
+  option (Otavio Salvador)
+- add Persian, Low German translations
+
+* Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.52.12-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
+* Wed Nov 10 2010 Miroslav Lichvar <mlichvar@redhat.com> - 0.52.12-2
+- don't hang in form when stdin disappears
+
+* Fri Aug 06 2010 Miroslav Lichvar <mlichvar@redhat.com> - 0.52.12-1
+- fix whiptail --gauge and its description in man page (#620083)
+- remove space after \n in whiptail texts (#620083)
+- remove NLS code from snack (#599608)
+- expose more keys to python as shortcuts in dialogs (Jakob Kemi)
+- release python global-thread-lock during dialog displays (Jakob Kemi)
+- fix warnings in whiptcl.c and include Tcl_PkgProvide() call (Mikhail T.)
+- don't NULL deref when an invalid array is specified in checkboxtree
+  (Arnaldo Carvalho de Melo)
+
+* Wed Jul 21 2010 David Malcolm <dmalcolm@redhat.com> - 0.52.11-3
+- Rebuilt for https://fedoraproject.org/wiki/Features/Python_2.7/MassRebuild
+
 * Thu Jan  7 2010 Hans de Goede <hdegoede@redhat.com> - 0.52.11-2
 - Change python_sitearch macro to use %%global as the new rpm will break
   using %%define here, see:
