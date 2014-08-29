@@ -1,1 +1,2 @@
 whiptail	usr/bin
+debian/bash_completion.d/* 	etc/bash_completion.d

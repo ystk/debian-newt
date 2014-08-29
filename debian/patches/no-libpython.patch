@@ -4,18 +4,18 @@ Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=655244
 Forwarded: no
 Last-Updated: 2012-01-09
 
-Index: newt-0.52.14/Makefile.in
+Index: newt-0.52.15/Makefile.in
 ===================================================================
---- newt-0.52.14.orig/Makefile.in	2012-01-09 17:39:14.000000000 +0000
-+++ newt-0.52.14/Makefile.in	2012-01-09 17:40:48.000000000 +0000
-@@ -81,8 +81,8 @@
- 	    	mkdir -p $$ver ;\
- 			PCFLAGS=`$$ver-config --cflags`; \
- 			PIFLAGS=`$$ver-config --includes`; \
--			PLDFLAGS=`$$ver-config --ldflags`; \
--			PLFLAGS=`$$ver-config --libs`; \
-+			PLDFLAGS=`$$ver-config --ldflags | sed -e 's/\-lpython[0-9.]*//'`; \
-+			PLFLAGS=`$$ver-config --libs | sed -e 's/\-lpython[0-9.]*//'`; \
- 	        $(CC) $(CPPFLAGS) $$PIFLAGS $$PCFLAGS -c -o $$ver/snackmodule.o snackmodule.c ;\
- 	        $(CC) --shared $$PLDFLAGS $$PLFLAGS $(LDFLAGS) -o $$ver/_snackmodule.so $$ver/snackmodule.o -L.  -lnewt $(LIBS);\
+--- newt-0.52.15.orig/Makefile.in	2013-05-14 16:36:17.000000000 +0100
++++ newt-0.52.15/Makefile.in	2013-05-14 16:37:04.000000000 +0100
+@@ -87,8 +87,8 @@
+ 		mkdir -p $$ver; \
+ 		PCFLAGS=`$$pyconfig --cflags`; \
+ 		PIFLAGS=`$$pyconfig --includes`; \
+-		PLDFLAGS=`$$pyconfig --ldflags`; \
+-		PLFLAGS=`$$pyconfig --libs`; \
++                PLDFLAGS=`$$ver-config --ldflags | sed -e 's/\-lpython[0-9.]*[a-z]*//'`; \
++                PLFLAGS=`$$ver-config --libs | sed -e 's/\-lpython[0-9.]*[a-z]*//'`; \
+ 		echo $(CC) $(SHCFLAGS) $(CPPFLAGS) $$PIFLAGS $$PCFLAGS -c -o $$ver/snackmodule.o snackmodule.c; \
                  $(CC) $(subst -O2,-O0,$(CFLAGS)) -I/usr/include/$${ver}_d -fPIC -c -o $$ver/snackmodule_d.o snackmodule.c ;\
+                 $(CC) --shared $(SHCFLAGS) -o $$ver/_snackmodule_d.so $$ver/snackmodule_d.o -L .  -lnewt  ;\

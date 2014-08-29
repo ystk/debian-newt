@@ -1,3 +1,49 @@
+newt (0.52.17-1) unstable; urgency=medium
+
+  * Move to new release 0.5.17.
+   - snackmodule now renamed 'snack' in python, tclsh.
+   - python3 now in upstream. Remove patch.
+  * Now Standards-Version: 3.9.5 
+  * Use 'xz' compression. 
+  * Add bash completion to whiptail. 
+  * Mark whiptail as 'Mult-Arch: foreign'. Closes:#750767. 
+  * Add bash_completion for whiptail.
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Mon, 09 Jun 2014 09:38:39 +0100
+
+newt (0.52.15-3) unstable; urgency=low
+
+  * Fix handling of alternatives for /etc/newt/palette in M-A package
+    libnewt0.52. CLoses: #718635
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Mon, 09 Sep 2013 16:27:24 +0100
+
+newt (0.52.15-2) unstable; urgency=low
+
+  * Ensure unowned files get removed on purge.( /etc/newt/palette).
+    Closes: #709194. 
+  * Fix FTBFS with new automake-1.13.
+  * Add symbols file for libnewt0.52.15
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Thu, 06 Jun 2013 14:28:50 +0100
+
+newt (0.52.15-1) unstable; urgency=low
+
+  * New upstream release.
+  * Standards-Version: 3.9.4
+  * Build against tcl8.6-dev 
+  * Build python3 modules. Closes: #691240
+  * Update patches; latvian patch now merged upstream.
+  * M-A, round two: patch to run msgfmt --endianness little to force
+    .mo files to be identical. Now lib* package can be Multi-Arch: same
+  * The python-newt-dbg and python3-newt-dbg packages conflict as they
+    ship the same debug symbols file (hashed)
+  * Use dh --with autoreconf rather than call 'by hand'. Cleaner.
+  * Include more changes for hardening support. Closes: #658430.
+  * Improved watch file from Bart Martens.
+
+ -- Alastair McKinstry <mckinstry@debian.org>  Thu, 16 May 2013 20:56:57 +0100
+
 newt (0.52.14-11.1) unstable; urgency=low
 
   * Non-maintainer upload.

@@ -1,14 +1,14 @@
 Author: Various, including Eugeniy Meshcheryakov, Alastair McKinstry
 Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=323832
 Description: Bidirectional text support for NEWT.
-Last-Updated: 2011-12-05
+Last-Updated: 2014-06-11
 Forwarded: no
 
-Index: newt-0.52.14/button.c
+Index: newt-0.52.17/button.c
 ===================================================================
---- newt-0.52.14.orig/button.c	2012-01-01 15:54:37.000000000 +0000
-+++ newt-0.52.14/button.c	2012-01-02 10:53:23.000000000 +0000
-@@ -113,7 +113,7 @@
+--- newt-0.52.17.orig/button.c
++++ newt-0.52.17/button.c
+@@ -113,7 +113,7 @@ static void buttonDrawIt(newtComponent c
  	    SLsmg_set_color(NEWT_COLORSET_ACTBUTTON);
  	newtGotorc(co->top+ pushed, co->left + 1 + pushed);
  	SLsmg_write_char('<');
@@ -17,7 +17,7 @@ Index: newt-0.52.14/button.c
  	SLsmg_write_char('>');
      } else {
  	if (pushed) {
-@@ -145,7 +145,7 @@
+@@ -145,7 +145,7 @@ static void buttonDrawText(newtComponent
  
      newtGotorc(co->top + 1 + pushed, co->left + 1 + pushed);
      SLsmg_write_char(' ');
@@ -26,11 +26,11 @@ Index: newt-0.52.14/button.c
      SLsmg_write_char(' ');
  }
  
-Index: newt-0.52.14/checkbox.c
+Index: newt-0.52.17/checkbox.c
 ===================================================================
---- newt-0.52.14.orig/checkbox.c	2012-01-01 15:54:37.000000000 +0000
-+++ newt-0.52.14/checkbox.c	2012-01-02 10:53:23.000000000 +0000
-@@ -210,7 +210,7 @@
+--- newt-0.52.17.orig/checkbox.c
++++ newt-0.52.17/checkbox.c
+@@ -210,7 +210,7 @@ static void cbDraw(newtComponent c) {
  	break;
      }
  
@@ -39,11 +39,11 @@ Index: newt-0.52.14/checkbox.c
  
      if (cb->hasFocus)
  	SLsmg_set_color(cb->active);
-Index: newt-0.52.14/checkboxtree.c
+Index: newt-0.52.17/checkboxtree.c
 ===================================================================
---- newt-0.52.14.orig/checkboxtree.c	2012-01-01 15:54:37.000000000 +0000
-+++ newt-0.52.14/checkboxtree.c	2012-01-02 10:53:23.000000000 +0000
-@@ -492,7 +492,7 @@
+--- newt-0.52.17.orig/checkboxtree.c
++++ newt-0.52.17/checkboxtree.c
+@@ -492,7 +492,7 @@ static void ctDraw(newtComponent co) {
  	    currRow = co->top + i;
  	}
  
@@ -52,11 +52,11 @@ Index: newt-0.52.14/checkboxtree.c
  
  	item++;
  	i++;
-Index: newt-0.52.14/configure.ac
+Index: newt-0.52.17/configure.ac
 ===================================================================
---- newt-0.52.14.orig/configure.ac	2012-01-01 15:54:37.000000000 +0000
-+++ newt-0.52.14/configure.ac	2012-01-02 10:53:23.000000000 +0000
-@@ -29,7 +29,10 @@
+--- newt-0.52.17.orig/configure.ac
++++ newt-0.52.17/configure.ac
+@@ -30,7 +30,10 @@ else
    AC_SUBST([GNU_LD])
  fi
  
@@ -68,19 +68,19 @@ Index: newt-0.52.14/configure.ac
  AC_CHECK_HEADER([slang.h], [], [
    old_CPPFLAGS=${CPPFLAGS}
    CPPFLAGS="${CPPFLAGS} -I/opt/local/include"
-@@ -102,6 +105,7 @@
+@@ -105,6 +108,7 @@ else
  fi
- AC_SUBST([WHIPTCLSO])
+ AC_SUBST([WHIPTCLLIB])
  
 +
  AC_ARG_WITH([gpm-support], [  --with-gpm-support      compile with GPM support])
  
  if test "x$with_gpm_support" = "xyes"; then
-Index: newt-0.52.14/entry.c
+Index: newt-0.52.17/entry.c
 ===================================================================
---- newt-0.52.14.orig/entry.c	2012-01-01 15:54:37.000000000 +0000
-+++ newt-0.52.14/entry.c	2012-01-02 10:53:23.000000000 +0000
-@@ -233,12 +233,15 @@
+--- newt-0.52.17.orig/entry.c
++++ newt-0.52.17/entry.c
+@@ -233,12 +233,15 @@ static void entryDraw(newtComponent co)
  
      if (len <= co->width) {
  	i = len;
@@ -97,11 +97,11 @@ Index: newt-0.52.14/entry.c
  	SLsmg_write_nstring(chptr, co->width);
  
      newtGotorc(co->top, co->left + wstrlen(en->buf+en->firstChar, en->cursorPosition - en->firstChar));
-Index: newt-0.52.14/label.c
+Index: newt-0.52.17/label.c
 ===================================================================
---- newt-0.52.14.orig/label.c	2012-01-01 15:54:37.000000000 +0000
-+++ newt-0.52.14/label.c	2012-01-02 10:53:23.000000000 +0000
-@@ -80,7 +80,9 @@
+--- newt-0.52.17.orig/label.c
++++ newt-0.52.17/label.c
+@@ -80,7 +80,9 @@ static void labelDraw(newtComponent co)
      SLsmg_set_color(la->cs);
  
      newtGotorc(co->top, co->left);
@@ -112,11 +112,11 @@ Index: newt-0.52.14/label.c
  }
  
  static void labelDestroy(newtComponent co) {
-Index: newt-0.52.14/listbox.c
+Index: newt-0.52.17/listbox.c
 ===================================================================
---- newt-0.52.14.orig/listbox.c	2012-01-01 15:54:37.000000000 +0000
-+++ newt-0.52.14/listbox.c	2012-01-02 10:53:23.000000000 +0000
-@@ -530,7 +530,7 @@
+--- newt-0.52.17.orig/listbox.c
++++ newt-0.52.17/listbox.c
+@@ -530,7 +530,7 @@ static void listboxDraw(newtComponent co
  	else
  	    SLsmg_set_color(NEWT_COLORSET_LISTBOX);
  
@@ -125,10 +125,10 @@ Index: newt-0.52.14/listbox.c
  
  	if (li->flags & NEWT_FLAG_MULTIPLE) {
  	    newtGotorc(co->top + i + li->bdyAdjust, co->left + li->bdxAdjust);
-Index: newt-0.52.14/newt.c
+Index: newt-0.52.17/newt.c
 ===================================================================
---- newt-0.52.14.orig/newt.c	2012-01-01 15:54:37.000000000 +0000
-+++ newt-0.52.14/newt.c	2012-01-02 10:53:23.000000000 +0000
+--- newt-0.52.17.orig/newt.c
++++ newt-0.52.17/newt.c
 @@ -18,6 +18,478 @@
  #include "newt.h"
  #include "newt_pr.h"
@@ -608,7 +608,7 @@ Index: newt-0.52.14/newt.c
  struct Window {
      int height, width, top, left;
      SLsmg_Char_Type * buffer;
-@@ -808,7 +1280,7 @@
+@@ -808,7 +1280,7 @@ int newtOpenWindow(int left, int top,
  	SLsmg_set_char_set(0);
  	SLsmg_write_char(' ');
  	SLsmg_set_color(NEWT_COLORSET_TITLE);
@@ -617,16 +617,16 @@ Index: newt-0.52.14/newt.c
  	SLsmg_set_color(NEWT_COLORSET_BORDER);
  	SLsmg_write_char(' ');
  	SLsmg_set_char_set(1);
-@@ -1062,7 +1534,7 @@
+@@ -1062,7 +1534,7 @@ void newtRedrawHelpLine(void) {
  	buf[SLtt_Screen_Cols] = '\0';
      }
      SLsmg_gotorc(SLtt_Screen_Rows - 1, 0);
 -    SLsmg_write_string(buf);
 +    write_string_int(buf, NULL);
+     SLsmg_gotorc(cursorRow, cursorCol);
  }
  
- void newtPushHelpLine(const char * text) {
-@@ -1107,7 +1579,7 @@
+@@ -1108,7 +1580,7 @@ void newtDrawRootText(int col, int row,
      }
  
      SLsmg_gotorc(row, col);
@@ -635,10 +635,10 @@ Index: newt-0.52.14/newt.c
  }
  
  int newtSetFlags(int oldFlags, int newFlags, enum newtFlagsSense sense) {
-Index: newt-0.52.14/newt.c-old
+Index: newt-0.52.17/newt.c-old
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ newt-0.52.14/newt.c-old	2012-01-02 10:53:23.000000000 +0000
+--- /dev/null
++++ newt-0.52.17/newt.c-old
 @@ -0,0 +1,1438 @@
 +#include "config.h"
 +
@@ -2078,11 +2078,11 @@ Index: newt-0.52.14/newt.c-old
 +	SLsmg_touch_lines (0, SLtt_Screen_Rows - 1);
 +}
 +     
-Index: newt-0.52.14/newt_pr.h
+Index: newt-0.52.17/newt_pr.h
 ===================================================================
---- newt-0.52.14.orig/newt_pr.h	2012-01-01 15:54:37.000000000 +0000
-+++ newt-0.52.14/newt_pr.h	2012-01-02 10:53:23.000000000 +0000
-@@ -84,6 +84,10 @@
+--- newt-0.52.17.orig/newt_pr.h
++++ newt-0.52.17/newt_pr.h
+@@ -84,6 +84,10 @@ struct eventResult newtDefaultEventHandl
  					   struct event ev);
  
  int _newt_wstrlen(const char *str, int len);
@@ -2093,11 +2093,11 @@ Index: newt-0.52.14/newt_pr.h
  #define wstrlen(str,len) _newt_wstrlen((str),(len))
  void trim_string(char *title, int chrs);
  
-Index: newt-0.52.14/textbox.c
+Index: newt-0.52.17/textbox.c
 ===================================================================
---- newt-0.52.14.orig/textbox.c	2012-01-01 15:54:37.000000000 +0000
-+++ newt-0.52.14/textbox.c	2012-01-02 10:55:44.000000000 +0000
-@@ -13,6 +13,7 @@
+--- newt-0.52.17.orig/textbox.c
++++ newt-0.52.17/textbox.c
+@@ -13,6 +13,7 @@ struct textbox {
      char ** lines;
      int numLines;
      int linesAlloced;
@@ -2105,7 +2105,7 @@ Index: newt-0.52.14/textbox.c
      int doWrap;
      newtComponent sb;
      int topLine;
-@@ -117,6 +118,9 @@
+@@ -117,6 +118,9 @@ newtComponent newtTextbox(int left, int
      tb->isActive = 0;
      tb->cs = COLORSET_TEXTBOX;
      tb->csActive = COLORSET_ACTTEXTBOX;
@@ -2115,7 +2115,7 @@ Index: newt-0.52.14/textbox.c
  
      if (flags & NEWT_FLAG_SCROLL) {
  	co->width += 2;
-@@ -371,10 +375,12 @@
+@@ -371,10 +375,12 @@ static void textboxDraw(newtComponent c)
      int i;
      struct textbox * tb = c->data;
      int size;
@@ -2129,7 +2129,7 @@ Index: newt-0.52.14/textbox.c
      if (tb->sb) {
  	size = tb->numLines - c->height;
  	newtScrollbarSet(tb->sb, tb->topLine, size ? size : 0);
-@@ -384,10 +390,32 @@
+@@ -384,10 +390,32 @@ static void textboxDraw(newtComponent c)
  
      SLsmg_set_color(tb->cs);
  
@@ -2165,7 +2165,7 @@ Index: newt-0.52.14/textbox.c
      /* put cursor at beginning of text for better accessibility */
      newtGotorc(c->top, c->left);
  }
-@@ -471,6 +499,7 @@
+@@ -471,6 +499,7 @@ static void textboxDestroy(newtComponent
      int i;
      struct textbox * tb = co->data;
  

@@ -1,7 +1,8 @@
+endianness.patch
+#hardening.patch
 python.patch
-tcl85.patch
+tcl86.patch
 icelandic.patch
-python-dbg.patch
 python_memory_allocation.patch
 bengali.patch
 italian.patch
@@ -13,11 +14,8 @@ uighir.patch
 sinhala.patch
 bidi.patch
 python_init_once.patch
-no-libpython.patch
-snackmodule-fpic.patch
-# 620_asturian.patch (100%)
-# 720_newt_combiwrap.patch
 messagebox_escape.patch
 welsh.patch
 lithuanian.patch
-latvian.patch
+compiler-warnings.patch
+snack.patch

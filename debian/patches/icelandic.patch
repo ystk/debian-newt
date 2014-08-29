@@ -4,9 +4,10 @@ Description: Icelandic support for NEWT
 Last-Updated: 2010-10-16
 Forwarded: no
 
-diff -ruN newt-0.52.11-old/po/is.po newt-0.52.11/po/is.po
---- newt-0.52.11-old/po/is.po	1970-01-01 01:00:00.000000000 +0100
-+++ newt-0.52.11/po/is.po	2010-10-16 15:09:56.000000000 +0100
+Index: newt-0.52.15/po/is.po
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ newt-0.52.15/po/is.po	2013-05-14 22:57:29.000000000 +0100
 @@ -0,0 +1,33 @@
 +# translation of newt_newt_is.po to Icelandic
 +# Copyright (C) 2010 Free Software Foundation

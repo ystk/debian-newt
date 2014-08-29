@@ -1,3 +1,4 @@
 usr/share/locale
-usr/lib/*/libnewt.so.0.52.14
+usr/lib/*/libnewt.so.0.52.17
 usr/lib/*/libnewt.so.0.52
+../../debian/palette.original etc/newt/

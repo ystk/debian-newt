@@ -1,25 +1,30 @@
 Description: snackmodule.* must be compiled -fPIC for amd64, etc.
 Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=655151
 Author: Alastair McKinstry <mckinstry@debian.org>
-Last-Updated: 2012-01-29
+Last-Updated: 20130-05-16
 Forwarded: no
 
 
-Index: newt-0.52.14/Makefile.in
+Index: newt-0.52.15/Makefile.in
 ===================================================================
---- newt-0.52.14.orig/Makefile.in	2012-01-29 14:46:19.000000000 +0000
-+++ newt-0.52.14/Makefile.in	2012-01-29 14:59:00.000000000 +0000
-@@ -83,10 +83,10 @@
- 			PIFLAGS=`$$ver-config --includes`; \
- 			PLDFLAGS=`$$ver-config --ldflags | sed -e 's/\-lpython[0-9.]*//'`; \
- 			PLFLAGS=`$$ver-config --libs | sed -e 's/\-lpython[0-9.]*//'`; \
--	        $(CC) $(CPPFLAGS) $$PIFLAGS $$PCFLAGS -c -o $$ver/snackmodule.o snackmodule.c ;\
--	        $(CC) --shared $$PLDFLAGS $$PLFLAGS $(LDFLAGS) -o $$ver/_snackmodule.so $$ver/snackmodule.o -L.  -lnewt $(LIBS);\
-+	        $(CC) $(CPPFLAGS) $$PIFLAGS $$PCFLAGS -fPIC -c -o $$ver/snackmodule.o snackmodule.c ;\
-+	        $(CC) --shared -fPIC $$PLDFLAGS $$PLFLAGS $(LDFLAGS) -o $$ver/_snackmodule.so $$ver/snackmodule.o -L.  -lnewt $(LIBS);\
+--- newt-0.52.15.orig/Makefile.in	2013-05-15 13:26:06.000000000 +0100
++++ newt-0.52.15/Makefile.in	2013-05-15 13:29:53.000000000 +0100
+@@ -89,12 +89,13 @@
+ 		PIFLAGS=`$$pyconfig --includes`; \
+                 PLDFLAGS=`$$ver-config --ldflags | sed -e 's/\-lpython[0-9.]*[a-z]*//'`; \
+                 PLFLAGS=`$$ver-config --libs | sed -e 's/\-lpython[0-9.]*[a-z]*//'`; \
+-		echo $(CC) $(CFLAGS) $(SHCFLAGS) $(CPPFLAGS) $$PIFLAGS $$PCFLAGS -c -o $$ver/snackmodule.o snackmodule.c; \
++		echo $(CC) -fPIC $(CFLAGS) $(SHCFLAGS) $(CPPFLAGS) $$PIFLAGS $$PCFLAGS -c -o $$ver/snackmodule.o snackmodule.c; \
                  $(CC) $(subst -O2,-O0,$(CFLAGS)) -I/usr/include/$${ver}_d -fPIC -c -o $$ver/snackmodule_d.o snackmodule.c ;\
 -                $(CC) --shared $(SHCFLAGS) -o $$ver/_snackmodule_d.so $$ver/snackmodule_d.o -L .  -lnewt  ;\
-+                $(CC) --shared -fPIC  $(SHCFLAGS) -o $$ver/_snackmodule_d.so $$ver/snackmodule_d.o -L .  -lnewt  ;\
+-		$(CC) $(CFLAGS) $(SHCFLAGS) $(CPPFLAGS) $$PIFLAGS $$PCFLAGS -c -o $$ver/snackmodule.o snackmodule.c; \
+-		echo $(CC) $(CFLAGS) --shared $$PLDFLAGS $$PLFLAGS $(LDFLAGS) -o $$ver/_snackmodule.so $$ver/snackmodule.o -L.  -lnewt $(LIBS); \
+-		$(CC) $(CFLAGS) --shared $$PLDFLAGS $$PLFLAGS $(LDFLAGS) -o $$ver/_snackmodule.so $$ver/snackmodule.o -L.  -lnewt $(LIBS); \
++                echo $(CC) -fPIC $$PIFLAGS $$PCFLAGS $(CPPFLAGS) $(CFLAGS) --shared $(SHCFLAGS) -o $$ver/_snackmodule_d.so $$ver/snackmodule_d.o -L .  -lnewt  ;\
++                $(CC) -fPIC $$PIFLAGS $$PCFLAGS $(CPPFLAGS) $(CFLAGS) --shared $(SHCFLAGS) -o $$ver/_snackmodule_d.so $$ver/snackmodule_d.o -L .  -lnewt  ;\
++		$(CC) -fPIC $(CFLAGS) $(SHCFLAGS) $(CPPFLAGS) $$PIFLAGS $$PCFLAGS -c -o $$ver/snackmodule.o snackmodule.c; \
++		echo $(CC) -fPIC $(CFLAGS) $(CPPFLAGS) --shared $$PLDFLAGS $$PLFLAGS $(LDFLAGS) -o $$ver/_snackmodule.so $$ver/snackmodule.o -L.  -lnewt $(LIBS); \
++		$(CC) $(CFLAGS) -fPIC --shared $$PLDFLAGS $$PLFLAGS $(LDFLAGS) -o $$ver/_snackmodule.so $$ver/snackmodule.o -L.  -lnewt $(LIBS); \
  	done || :
  	touch $@
  

@@ -12,9 +12,23 @@
 #include <unistd.h>
 
 #include "Python.h"
+#include "structmember.h"
 #include "nls.h"
 #include "newt.h"
 #include "newt_pr.h"
+
+#if PY_MAJOR_VERSION >= 3
+  #define PyInt_FromLong PyLong_FromLong
+  #define PyInt_AsLong PyLong_AsLong
+  #define PyString_FromString PyUnicode_FromString
+  #define MOD_ERROR_VAL NULL
+  #define MOD_SUCCESS_VAL(val) val
+  #define MOD_INIT(name) PyMODINIT_FUNC PyInit_##name(void)
+#else
+  #define MOD_ERROR_VAL
+  #define MOD_SUCCESS_VAL(val)
+  #define MOD_INIT(name) void init##name(void)
+#endif
 
 typedef struct snackWidget_s snackWidget;
 typedef struct snackGrid_s snackGrid;
@@ -68,6 +82,8 @@ static snackWidget * textWidget(PyObject * s, PyObject * args);
 static PyObject * ternaryWindow(PyObject * s, PyObject * args);
 static snackWidget * checkboxTreeWidget(PyObject * s, PyObject * args, PyObject * kwargs);
 static PyObject * pywstrlen(PyObject * s, PyObject * args);
+static PyObject * widget_get_checkboxValue(PyObject *self, void *closure);
+static PyObject * widget_get_radioValue(PyObject *self, void *closure);
 
 static PyMethodDef snackModuleMethods[] = {
     { "button", (PyCFunction) buttonWidget, METH_VARARGS, NULL },
@@ -107,12 +123,31 @@ static PyMethodDef snackModuleMethods[] = {
     { NULL }
 } ;
 
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef moduledef = {
+    PyModuleDef_HEAD_INIT,
+        "_snack",            /* m_name */
+        NULL,                /* m_doc */
+        -1,                  /* m_size */
+        snackModuleMethods,  /* m_methods */
+        NULL,                /* m_reload */
+        NULL,                /* m_traverse */
+        NULL,                /* m_clear */
+        NULL,                /* m_free */
+    };
+#endif
+
+static struct PyGetSetDef widget_getset[] = {
+        { "checkboxValue", widget_get_checkboxValue, 0, NULL, NULL },
+        { "radioValue", widget_get_radioValue, 0, NULL, NULL },
+        { NULL }
+};
+
 struct snackGrid_s {
     PyObject_HEAD
     newtGrid grid;
 } ;
 
-static PyObject * gridGetAttr(PyObject * s, char * name);
 static PyObject * gridPlace(snackGrid * s, PyObject * args);
 static PyObject * gridSetField(snackGrid * s, PyObject * args);
 
@@ -123,20 +158,34 @@ static PyMethodDef gridMethods[] = {
 };
 
 static PyTypeObject snackGridType = {
-        PyObject_HEAD_INIT(&PyType_Type)
-        0,                              /* ob_size */
+        PyVarObject_HEAD_INIT(&PyType_Type, 0)
         "snackgrid",                    /* tp_name */
         sizeof(snackGrid),              /* tp_size */
         0,                              /* tp_itemsize */
         emptyDestructor,      			/* tp_dealloc */
         0,                              /* tp_print */
-        gridGetAttr,    		/* tp_getattr */
+        0,                   		/* tp_getattr */
         0,                              /* tp_setattr */
         0,                              /* tp_compare */
         0,                              /* tp_repr */
         0,                              /* tp_as_number */
         0,                              /* tp_as_sequence */
         0,                		/* tp_as_mapping */
+	0,                              /* tp_hash */
+	0,                              /* tp_call */
+	0,                              /* tp_str */
+	PyObject_GenericGetAttr,        /* tp_getattro */
+	0,                              /* tp_setattro */
+	0,                              /* tp_as_buffer */
+	Py_TPFLAGS_DEFAULT,             /* tp_flags */
+	0,                              /* tp_doc */
+	0,                              /* tp_traverse */
+	0,                              /* tp_clear */
+	0,                              /* tp_richcompare */
+	0,                              /* tp_weaklistoffset */
+	0,                              /* tp_iter */
+	0,                              /* tp_iternext */
+	gridMethods                     /* tp_methods */
 };
 
 struct snackForm_s {
@@ -144,7 +193,6 @@ struct snackForm_s {
     newtComponent fo;
 } ;
 
-static PyObject * formGetAttr(PyObject * s, char * name);
 static PyObject * formAdd(snackForm * s, PyObject * args);
 static PyObject * formDraw(snackForm * s, PyObject * args);
 static PyObject * formRun(snackForm * s, PyObject * args);
@@ -165,20 +213,34 @@ static PyMethodDef formMethods[] = {
 };
 
 static PyTypeObject snackFormType = {
-        PyObject_HEAD_INIT(&PyType_Type)
-        0,                              /* ob_size */
+        PyVarObject_HEAD_INIT(&PyType_Type, 0)
         "snackform",                    /* tp_name */
         sizeof(snackForm),              /* tp_size */
         0,                              /* tp_itemsize */
         emptyDestructor,      		/* tp_dealloc */
         0,                              /* tp_print */
-        formGetAttr,    		/* tp_getattr */
+        0,                     		/* tp_getattr */
         0,                              /* tp_setattr */
         0,                              /* tp_compare */
         0,                              /* tp_repr */
         0,                              /* tp_as_number */
         0,                              /* tp_as_sequence */
         0,                		/* tp_as_mapping */
+	0,                              /* tp_hash */
+	0,                              /* tp_call */
+	0,                              /* tp_str */
+	PyObject_GenericGetAttr,        /* tp_getattro */
+	0,                              /* tp_setattro */
+	0,                              /* tp_as_buffer */
+	Py_TPFLAGS_DEFAULT,             /* tp_flags */
+	0,                              /* tp_doc */
+	0,                              /* tp_traverse */
+	0,                              /* tp_clear */
+	0,                              /* tp_richcompare */
+	0,                              /* tp_weaklistoffset */
+	0,                              /* tp_iter */
+	0,                              /* tp_iternext */
+	formMethods                     /* tp_methods */
 };
 
 struct snackWidget_s {
@@ -191,7 +253,6 @@ struct snackWidget_s {
 } ;
 
 static PyObject * widgetAddCallback(snackWidget * s, PyObject * args);
-static PyObject * widgetGetAttr(PyObject * s, char * name);
 static void widgetDestructor(PyObject * s);
 static PyObject * widgetEntrySetValue(snackWidget * s, PyObject * args);
 static PyObject * widgetLabelText(snackWidget * s, PyObject * args);
@@ -255,27 +316,51 @@ static PyMethodDef widgetMethods[] = {
     { NULL }
 };
 
+static PyMemberDef widget_members[] = {
+        { "key" , T_INT, offsetof(snackWidget, co), 0, NULL },
+        { "entryValue", T_STRING, offsetof(snackWidget, apointer), 0, NULL },
+	{ NULL }
+};
+
 static PyTypeObject snackWidgetType = {
-        PyObject_HEAD_INIT(&PyType_Type)
-        0,                              /* ob_size */
+        PyVarObject_HEAD_INIT(&PyType_Type, 0)
         "snackwidget",                  /* tp_name */
         sizeof(snackWidget),            /* tp_size */
         0,                              /* tp_itemsize */
         widgetDestructor,      		/* tp_dealloc */
         0,                              /* tp_print */
-        widgetGetAttr,  		/* tp_getattr */
+        0,                   		/* tp_getattr */
         0,                              /* tp_setattr */
         0,                              /* tp_compare */
         0,                              /* tp_repr */
         0,                              /* tp_as_number */
         0,                              /* tp_as_sequence */
         0,                		/* tp_as_mapping */
+	0,                              /* tp_hash */
+	0,                              /* tp_call */
+	0,                              /* tp_str */
+	PyObject_GenericGetAttr,        /* tp_getattro */
+	0,                              /* tp_setattro */
+	0,                              /* tp_as_buffer */
+	Py_TPFLAGS_DEFAULT,             /* tp_flags */
+	0,                              /* tp_doc */
+	0,                              /* tp_traverse */
+	0,                              /* tp_clear */
+	0,                              /* tp_richcompare */
+	0,                              /* tp_weaklistoffset */
+	0,                              /* tp_iter */
+	0,                              /* tp_iternext */
+	widgetMethods,                  /* tp_methods */
+	widget_members,                 /* tp_members */
+	widget_getset                   /* tp_getset */
 };
 
 static snackWidget * snackWidgetNew (void) {
     snackWidget * widget;
      
     widget = PyObject_NEW(snackWidget, &snackWidgetType);
+    if (!widget)
+	return NULL;
 
     widget->scs.cb = NULL;
     widget->scs.data = NULL;
@@ -328,6 +413,8 @@ static PyObject * scaleWidget(PyObject * s, PyObject * args) {
     if (!PyArg_ParseTuple(args, "ii", &width, &fullAmount)) return NULL;
 
     widget = snackWidgetNew ();
+    if (!widget)
+	return NULL;
     widget->co = newtScale(-1, -1, width, fullAmount);
 
     return (PyObject *) widget;
@@ -624,6 +711,8 @@ static snackWidget * buttonWidget(PyObject * s, PyObject * args) {
     if (!PyArg_ParseTuple(args, "s", &label)) return NULL;
 
     widget = snackWidgetNew ();
+    if (!widget)
+	return NULL;
     widget->co = newtButton(-1, -1, label);
 
     return widget;
@@ -636,6 +725,8 @@ static snackWidget * compactbuttonWidget(PyObject * s, PyObject * args) {
     if (!PyArg_ParseTuple(args, "s", &label)) return NULL;
 
     widget = snackWidgetNew ();
+    if (!widget)
+	return NULL;
     widget->co = newtCompactButton(-1, -1, label);
 
     return widget;
@@ -648,6 +739,8 @@ static snackWidget * labelWidget(PyObject * s, PyObject * args) {
     if (!PyArg_ParseTuple(args, "s", &label)) return NULL;
 
     widget = snackWidgetNew ();
+    if (!widget)
+	return NULL;
     widget->co = newtLabel(-1, -1, label);
 
     return widget;
@@ -707,6 +800,8 @@ static snackWidget * listboxWidget(PyObject * s, PyObject * args) {
 	return NULL;
 
     widget = snackWidgetNew ();
+    if (!widget)
+	return NULL;
     widget->co = newtListbox(-1, -1, height,
 			     (doScroll ? NEWT_FLAG_SCROLL : 0) |
 			     (returnExit ? NEWT_FLAG_RETURNEXIT : 0) |
@@ -730,6 +825,8 @@ static snackWidget * textWidget(PyObject * s, PyObject * args) {
 	return NULL;
 
     widget = snackWidgetNew ();
+    if (!widget)
+	return NULL;
     widget->co = newtTextbox(-1, -1, width, height,
 				(scrollBar ? NEWT_FLAG_SCROLL : 0) |
  			        (wrap ? NEWT_FLAG_WRAP : 0));
@@ -747,6 +844,8 @@ static snackWidget * radioButtonWidget(PyObject * s, PyObject * args) {
 		return NULL;
 
     widget = snackWidgetNew ();
+    if (!widget)
+	return NULL;
 
     if ((PyObject *) group == Py_None)
 	widget->co = newtRadiobutton(-1, -1, text, isOn, NULL);
@@ -764,6 +863,8 @@ static snackWidget * checkboxWidget(PyObject * s, PyObject * args) {
     if (!PyArg_ParseTuple(args, "si", &text, &isOn)) return NULL;
 
     widget = snackWidgetNew ();
+    if (!widget)
+	return NULL;
     widget->co = newtCheckbox(-1, -1, text, isOn ? '*' : ' ', NULL, 
 				&widget->achar);
 
@@ -802,6 +903,8 @@ static snackWidget * entryWidget(PyObject * s, PyObject * args) {
 			  &isHidden, &isPassword, &isScrolled, &returnExit)) return NULL;
 
     widget = snackWidgetNew ();
+    if (!widget)
+	return NULL;
     widget->co = newtEntry(-1, -1, initial, width,
                            (const char **) &widget->apointer, 
 			   (isHidden ? NEWT_FLAG_HIDDEN : 0) |
@@ -839,10 +942,6 @@ static snackGrid * gridCreate(PyObject * s, PyObject * args) {
     return grid;
 }
 
-static PyObject * gridGetAttr(PyObject * s, char * name) {
-    return Py_FindMethod(gridMethods, s, name);
-}
-
 static PyObject * gridPlace(snackGrid * grid, PyObject * args) {
     int x, y;
 
@@ -866,7 +965,7 @@ static PyObject * gridSetField(snackGrid * grid, PyObject * args) {
 				&anchorFlags, &growFlags)) 
 	return NULL;
 
-    if (w->ob_type == &snackWidgetType) {
+    if (Py_TYPE(w) == &snackWidgetType) {
 	newtGridSetField(grid->grid, x, y, NEWT_GRID_COMPONENT,
 			 w->co, pLeft, pTop, pRight, pBottom, anchorFlags, 
 			 growFlags);
@@ -879,10 +978,6 @@ static PyObject * gridSetField(snackGrid * grid, PyObject * args) {
 
     Py_INCREF(Py_None);
     return Py_None;
-}
-
-static PyObject * formGetAttr(PyObject * s, char * name) {
-    return Py_FindMethod(formMethods, s, name);
 }
 
 static PyObject * formDraw(snackForm * s, PyObject * args) {
@@ -976,20 +1071,18 @@ static PyObject * formSetCurrent(snackForm * form, PyObject * args) {
     return Py_None;
 }
 
-static PyObject * widgetGetAttr(PyObject * s, char * name) {
-    snackWidget * w = (snackWidget *) s;
+static PyObject * widget_get_checkboxValue(PyObject *self, void *closure)
+{
+	snackWidget *w = (snackWidget *)self;
 
-    if (!strcmp(name, "key")) {
-	return Py_BuildValue("i", w->co);
-    } else if (!strcmp(name, "entryValue")) {
-	return Py_BuildValue("s", w->apointer);
-    } else if (!strcmp(name, "checkboxValue")) {
 	return Py_BuildValue("i", w->achar == ' ' ? 0 : 1);
-    } else if (!strcmp(name, "radioValue")) {
-	return Py_BuildValue("i", newtRadioGetCurrent(w->co));
-    }
+}
 
-    return Py_FindMethod(widgetMethods, s, name);
+static PyObject * widget_get_radioValue(PyObject *self, void *closure)
+{
+	snackWidget *w = (snackWidget *)self;
+
+	return Py_BuildValue("i", newtRadioGetCurrent(w->co));
 }
 
 static void widgetDestructor(PyObject * o) {
@@ -1088,7 +1181,7 @@ static PyObject * widgetListboxGetSel(snackWidget * s, PyObject * args) {
     void ** selection;
     int numselected;
     int i;
-    PyObject * sel;
+    PyObject * sel, * int_obj;
 
     if (!PyArg_ParseTuple(args, ""))
         return NULL;
@@ -1098,12 +1191,13 @@ static PyObject * widgetListboxGetSel(snackWidget * s, PyObject * args) {
     sel = PyList_New(0);
 
     if (!selection) {
-        return sel;
+	return sel;
     }
 
-    sel = PyList_New(0);
     for (i = 0; i < numselected; i++) {
-        PyList_Append(sel, PyInt_FromLong((long) selection[i]));
+	int_obj = PyInt_FromLong((long) selection[i]);
+	PyList_Append(sel, int_obj);
+	Py_DECREF(int_obj);
     }
     free(selection);
 
@@ -1165,6 +1259,8 @@ static snackWidget * checkboxTreeWidget(PyObject * s, PyObject * args, PyObject 
 	(unselectable ? NEWT_CHECKBOXTREE_UNSELECTABLE : 0);
 
     widget = snackWidgetNew ();
+    if (!widget)
+	return NULL;
     widget->co = newtCheckboxTree(-1, -1, height, flags);
 
     widget->anint = 1;
@@ -1263,7 +1359,10 @@ static PyObject * widgetCheckboxTreeGetEntryValue(snackWidget * s, PyObject * ar
 
     selection = newtCheckboxTreeGetEntryValue(s->co, I2P(data));
 
-    if (selection == -1) return NULL;
+    if (selection == -1) {
+	PyErr_SetString(PyExc_KeyError, "unknown entry");
+	return NULL;
+    }
 
     switch (selection) {
     case NEWT_CHECKBOXTREE_EXPANDED:
@@ -1285,7 +1384,7 @@ static PyObject * widgetCheckboxTreeGetSel(snackWidget * s,
     void ** selection;
     int numselected;
     int i;
-    PyObject * sel;
+    PyObject * sel, * int_obj;
 
     if (!PyArg_ParseTuple(args, ""))
 	return NULL;
@@ -1298,9 +1397,10 @@ static PyObject * widgetCheckboxTreeGetSel(snackWidget * s,
 	return sel;
     }
 
-    sel = PyList_New(0);
     for (i = 0; i < numselected; i++) {
-    	PyList_Append(sel, PyInt_FromLong((long) selection[i]));
+	int_obj = PyInt_FromLong((long) selection[i]);
+	PyList_Append(sel, int_obj);
+	Py_DECREF(int_obj);
     }
     free(selection);
 
@@ -1317,84 +1417,102 @@ static PyObject * pywstrlen(PyObject * s, PyObject * args)
     return PyInt_FromLong(wstrlen(str, len));
 }
 
-void init_snack(void) {
+static void setitemstring_decref(PyObject * dict,
+				const char * s, PyObject * o)
+{
+    PyDict_SetItemString(dict, s, o);
+    Py_DECREF(o);
+}
+
+MOD_INIT(_snack)
+{
     PyObject * d, * m;
 
+#if PY_MAJOR_VERSION >= 3
+    m = PyModule_Create(&moduledef);
+#else
     m = Py_InitModule("_snack", snackModuleMethods);
+#endif
+
+    if (!m)
+	    return MOD_ERROR_VAL;
+
     d = PyModule_GetDict(m);
 
-    PyDict_SetItemString(d, "ANCHOR_LEFT", PyInt_FromLong(NEWT_ANCHOR_LEFT));
-    PyDict_SetItemString(d, "ANCHOR_TOP", PyInt_FromLong(NEWT_ANCHOR_TOP));
-    PyDict_SetItemString(d, "ANCHOR_RIGHT", PyInt_FromLong(NEWT_ANCHOR_RIGHT));
-    PyDict_SetItemString(d, "ANCHOR_BOTTOM", 
+    setitemstring_decref(d, "ANCHOR_LEFT", PyInt_FromLong(NEWT_ANCHOR_LEFT));
+    setitemstring_decref(d, "ANCHOR_TOP", PyInt_FromLong(NEWT_ANCHOR_TOP));
+    setitemstring_decref(d, "ANCHOR_RIGHT", PyInt_FromLong(NEWT_ANCHOR_RIGHT));
+    setitemstring_decref(d, "ANCHOR_BOTTOM",
 			 PyInt_FromLong(NEWT_ANCHOR_BOTTOM));
-    PyDict_SetItemString(d, "GRID_GROWX", PyInt_FromLong(NEWT_GRID_FLAG_GROWX));
-    PyDict_SetItemString(d, "GRID_GROWY", PyInt_FromLong(NEWT_GRID_FLAG_GROWY));
+    setitemstring_decref(d, "GRID_GROWX", PyInt_FromLong(NEWT_GRID_FLAG_GROWX));
+    setitemstring_decref(d, "GRID_GROWY", PyInt_FromLong(NEWT_GRID_FLAG_GROWY));
 
-    PyDict_SetItemString(d, "FD_READ", PyInt_FromLong(NEWT_FD_READ));
-    PyDict_SetItemString(d, "FD_WRITE", PyInt_FromLong(NEWT_FD_WRITE));
-    PyDict_SetItemString(d, "FD_EXCEPT", PyInt_FromLong(NEWT_FD_EXCEPT));
+    setitemstring_decref(d, "FD_READ", PyInt_FromLong(NEWT_FD_READ));
+    setitemstring_decref(d, "FD_WRITE", PyInt_FromLong(NEWT_FD_WRITE));
+    setitemstring_decref(d, "FD_EXCEPT", PyInt_FromLong(NEWT_FD_EXCEPT));
 
-    PyDict_SetItemString(d, "FORM_EXIT_HOTKEY", PyString_FromString("hotkey"));
-    PyDict_SetItemString(d, "FORM_EXIT_WIDGET", PyString_FromString("widget"));
-    PyDict_SetItemString(d, "FORM_EXIT_TIMER", PyString_FromString("timer"));
-    PyDict_SetItemString(d, "FORM_EXIT_FDREADY", PyString_FromString("fdready"));
+    setitemstring_decref(d, "FORM_EXIT_HOTKEY", PyString_FromString("hotkey"));
+    setitemstring_decref(d, "FORM_EXIT_WIDGET", PyString_FromString("widget"));
+    setitemstring_decref(d, "FORM_EXIT_TIMER", PyString_FromString("timer"));
+    setitemstring_decref(d, "FORM_EXIT_FDREADY", PyString_FromString("fdready"));
 
-    PyDict_SetItemString(d, "KEY_TAB", PyInt_FromLong(NEWT_KEY_TAB));
-    PyDict_SetItemString(d, "KEY_ENTER", PyInt_FromLong(NEWT_KEY_ENTER));
-    PyDict_SetItemString(d, "KEY_SUSPEND", PyInt_FromLong(NEWT_KEY_SUSPEND));
-    PyDict_SetItemString(d, "KEY_UP", PyInt_FromLong(NEWT_KEY_UP));
-    PyDict_SetItemString(d, "KEY_DOWN", PyInt_FromLong(NEWT_KEY_DOWN));
-    PyDict_SetItemString(d, "KEY_LEFT", PyInt_FromLong(NEWT_KEY_LEFT));
-    PyDict_SetItemString(d, "KEY_RIGHT", PyInt_FromLong(NEWT_KEY_RIGHT));
-    PyDict_SetItemString(d, "KEY_BACKSPACE", PyInt_FromLong(NEWT_KEY_BKSPC));
-    PyDict_SetItemString(d, "KEY_DELETE", PyInt_FromLong(NEWT_KEY_DELETE));
-    PyDict_SetItemString(d, "KEY_HOME", PyInt_FromLong(NEWT_KEY_HOME));
-    PyDict_SetItemString(d, "KEY_END", PyInt_FromLong(NEWT_KEY_END));
-    PyDict_SetItemString(d, "KEY_UNTAB", PyInt_FromLong(NEWT_KEY_UNTAB));
-    PyDict_SetItemString(d, "KEY_PAGEUP", PyInt_FromLong(NEWT_KEY_PGUP));
-    PyDict_SetItemString(d, "KEY_PAGEGDOWN", PyInt_FromLong(NEWT_KEY_PGDN));
-    PyDict_SetItemString(d, "KEY_INSERT", PyInt_FromLong(NEWT_KEY_INSERT));
-    PyDict_SetItemString(d, "KEY_F1", PyInt_FromLong(NEWT_KEY_F1));
-    PyDict_SetItemString(d, "KEY_F2", PyInt_FromLong(NEWT_KEY_F2));
-    PyDict_SetItemString(d, "KEY_F3", PyInt_FromLong(NEWT_KEY_F3));
-    PyDict_SetItemString(d, "KEY_F4", PyInt_FromLong(NEWT_KEY_F4));
-    PyDict_SetItemString(d, "KEY_F5", PyInt_FromLong(NEWT_KEY_F5));
-    PyDict_SetItemString(d, "KEY_F6", PyInt_FromLong(NEWT_KEY_F6));
-    PyDict_SetItemString(d, "KEY_F7", PyInt_FromLong(NEWT_KEY_F7));
-    PyDict_SetItemString(d, "KEY_F8", PyInt_FromLong(NEWT_KEY_F8));
-    PyDict_SetItemString(d, "KEY_F9", PyInt_FromLong(NEWT_KEY_F9));
-    PyDict_SetItemString(d, "KEY_F10", PyInt_FromLong(NEWT_KEY_F10));
-    PyDict_SetItemString(d, "KEY_F11", PyInt_FromLong(NEWT_KEY_F11));
-    PyDict_SetItemString(d, "KEY_F12", PyInt_FromLong(NEWT_KEY_F12));
-    PyDict_SetItemString(d, "KEY_ESC", PyInt_FromLong(NEWT_KEY_ESCAPE));
+    setitemstring_decref(d, "KEY_TAB", PyInt_FromLong(NEWT_KEY_TAB));
+    setitemstring_decref(d, "KEY_ENTER", PyInt_FromLong(NEWT_KEY_ENTER));
+    setitemstring_decref(d, "KEY_SUSPEND", PyInt_FromLong(NEWT_KEY_SUSPEND));
+    setitemstring_decref(d, "KEY_UP", PyInt_FromLong(NEWT_KEY_UP));
+    setitemstring_decref(d, "KEY_DOWN", PyInt_FromLong(NEWT_KEY_DOWN));
+    setitemstring_decref(d, "KEY_LEFT", PyInt_FromLong(NEWT_KEY_LEFT));
+    setitemstring_decref(d, "KEY_RIGHT", PyInt_FromLong(NEWT_KEY_RIGHT));
+    setitemstring_decref(d, "KEY_BACKSPACE", PyInt_FromLong(NEWT_KEY_BKSPC));
+    setitemstring_decref(d, "KEY_DELETE", PyInt_FromLong(NEWT_KEY_DELETE));
+    setitemstring_decref(d, "KEY_HOME", PyInt_FromLong(NEWT_KEY_HOME));
+    setitemstring_decref(d, "KEY_END", PyInt_FromLong(NEWT_KEY_END));
+    setitemstring_decref(d, "KEY_UNTAB", PyInt_FromLong(NEWT_KEY_UNTAB));
+    setitemstring_decref(d, "KEY_PAGEUP", PyInt_FromLong(NEWT_KEY_PGUP));
+    setitemstring_decref(d, "KEY_PAGEGDOWN", PyInt_FromLong(NEWT_KEY_PGDN));
+    setitemstring_decref(d, "KEY_INSERT", PyInt_FromLong(NEWT_KEY_INSERT));
+    setitemstring_decref(d, "KEY_F1", PyInt_FromLong(NEWT_KEY_F1));
+    setitemstring_decref(d, "KEY_F2", PyInt_FromLong(NEWT_KEY_F2));
+    setitemstring_decref(d, "KEY_F3", PyInt_FromLong(NEWT_KEY_F3));
+    setitemstring_decref(d, "KEY_F4", PyInt_FromLong(NEWT_KEY_F4));
+    setitemstring_decref(d, "KEY_F5", PyInt_FromLong(NEWT_KEY_F5));
+    setitemstring_decref(d, "KEY_F6", PyInt_FromLong(NEWT_KEY_F6));
+    setitemstring_decref(d, "KEY_F7", PyInt_FromLong(NEWT_KEY_F7));
+    setitemstring_decref(d, "KEY_F8", PyInt_FromLong(NEWT_KEY_F8));
+    setitemstring_decref(d, "KEY_F9", PyInt_FromLong(NEWT_KEY_F9));
+    setitemstring_decref(d, "KEY_F10", PyInt_FromLong(NEWT_KEY_F10));
+    setitemstring_decref(d, "KEY_F11", PyInt_FromLong(NEWT_KEY_F11));
+    setitemstring_decref(d, "KEY_F12", PyInt_FromLong(NEWT_KEY_F12));
+    setitemstring_decref(d, "KEY_ESC", PyInt_FromLong(NEWT_KEY_ESCAPE));
 
-    PyDict_SetItemString(d, "FLAG_DISABLED", PyInt_FromLong(NEWT_FLAG_DISABLED));
-    PyDict_SetItemString(d, "FLAGS_SET", PyInt_FromLong(NEWT_FLAGS_SET));
-    PyDict_SetItemString(d, "FLAGS_RESET", PyInt_FromLong(NEWT_FLAGS_RESET));
-    PyDict_SetItemString(d, "FLAGS_TOGGLE", PyInt_FromLong(NEWT_FLAGS_TOGGLE));
+    setitemstring_decref(d, "FLAG_DISABLED", PyInt_FromLong(NEWT_FLAG_DISABLED));
+    setitemstring_decref(d, "FLAGS_SET", PyInt_FromLong(NEWT_FLAGS_SET));
+    setitemstring_decref(d, "FLAGS_RESET", PyInt_FromLong(NEWT_FLAGS_RESET));
+    setitemstring_decref(d, "FLAGS_TOGGLE", PyInt_FromLong(NEWT_FLAGS_TOGGLE));
 
-    PyDict_SetItemString(d, "COLORSET_ROOT", PyInt_FromLong(NEWT_COLORSET_ROOT));
-    PyDict_SetItemString(d, "COLORSET_BORDER", PyInt_FromLong(NEWT_COLORSET_BORDER));
-    PyDict_SetItemString(d, "COLORSET_WINDOW", PyInt_FromLong(NEWT_COLORSET_WINDOW));
-    PyDict_SetItemString(d, "COLORSET_SHADOW", PyInt_FromLong(NEWT_COLORSET_SHADOW));
-    PyDict_SetItemString(d, "COLORSET_TITLE", PyInt_FromLong(NEWT_COLORSET_TITLE));
-    PyDict_SetItemString(d, "COLORSET_BUTTON", PyInt_FromLong(NEWT_COLORSET_BUTTON));
-    PyDict_SetItemString(d, "COLORSET_ACTBUTTON", PyInt_FromLong(NEWT_COLORSET_ACTBUTTON));
-    PyDict_SetItemString(d, "COLORSET_CHECKBOX", PyInt_FromLong(NEWT_COLORSET_CHECKBOX));
-    PyDict_SetItemString(d, "COLORSET_ACTCHECKBOX", PyInt_FromLong(NEWT_COLORSET_ACTCHECKBOX));
-    PyDict_SetItemString(d, "COLORSET_ENTRY", PyInt_FromLong(NEWT_COLORSET_ENTRY));
-    PyDict_SetItemString(d, "COLORSET_LABEL", PyInt_FromLong(NEWT_COLORSET_LABEL));
-    PyDict_SetItemString(d, "COLORSET_LISTBOX", PyInt_FromLong(NEWT_COLORSET_LISTBOX));
-    PyDict_SetItemString(d, "COLORSET_ACTLISTBOX", PyInt_FromLong(NEWT_COLORSET_ACTLISTBOX));
-    PyDict_SetItemString(d, "COLORSET_TEXTBOX", PyInt_FromLong(NEWT_COLORSET_TEXTBOX));
-    PyDict_SetItemString(d, "COLORSET_ACTTEXTBOX", PyInt_FromLong(NEWT_COLORSET_ACTTEXTBOX));
-    PyDict_SetItemString(d, "COLORSET_HELPLINE", PyInt_FromLong(NEWT_COLORSET_HELPLINE));
-    PyDict_SetItemString(d, "COLORSET_ROOTTEXT", PyInt_FromLong(NEWT_COLORSET_ROOTTEXT));
-    PyDict_SetItemString(d, "COLORSET_EMPTYSCALE", PyInt_FromLong(NEWT_COLORSET_EMPTYSCALE));
-    PyDict_SetItemString(d, "COLORSET_FULLSCALE", PyInt_FromLong(NEWT_COLORSET_FULLSCALE));
-    PyDict_SetItemString(d, "COLORSET_DISENTRY", PyInt_FromLong(NEWT_COLORSET_DISENTRY));
-    PyDict_SetItemString(d, "COLORSET_COMPACTBUTTON", PyInt_FromLong(NEWT_COLORSET_COMPACTBUTTON));
-    PyDict_SetItemString(d, "COLORSET_ACTSELLISTBOX", PyInt_FromLong(NEWT_COLORSET_ACTSELLISTBOX));
-    PyDict_SetItemString(d, "COLORSET_SELLISTBOX", PyInt_FromLong(NEWT_COLORSET_SELLISTBOX));
+    setitemstring_decref(d, "COLORSET_ROOT", PyInt_FromLong(NEWT_COLORSET_ROOT));
+    setitemstring_decref(d, "COLORSET_BORDER", PyInt_FromLong(NEWT_COLORSET_BORDER));
+    setitemstring_decref(d, "COLORSET_WINDOW", PyInt_FromLong(NEWT_COLORSET_WINDOW));
+    setitemstring_decref(d, "COLORSET_SHADOW", PyInt_FromLong(NEWT_COLORSET_SHADOW));
+    setitemstring_decref(d, "COLORSET_TITLE", PyInt_FromLong(NEWT_COLORSET_TITLE));
+    setitemstring_decref(d, "COLORSET_BUTTON", PyInt_FromLong(NEWT_COLORSET_BUTTON));
+    setitemstring_decref(d, "COLORSET_ACTBUTTON", PyInt_FromLong(NEWT_COLORSET_ACTBUTTON));
+    setitemstring_decref(d, "COLORSET_CHECKBOX", PyInt_FromLong(NEWT_COLORSET_CHECKBOX));
+    setitemstring_decref(d, "COLORSET_ACTCHECKBOX", PyInt_FromLong(NEWT_COLORSET_ACTCHECKBOX));
+    setitemstring_decref(d, "COLORSET_ENTRY", PyInt_FromLong(NEWT_COLORSET_ENTRY));
+    setitemstring_decref(d, "COLORSET_LABEL", PyInt_FromLong(NEWT_COLORSET_LABEL));
+    setitemstring_decref(d, "COLORSET_LISTBOX", PyInt_FromLong(NEWT_COLORSET_LISTBOX));
+    setitemstring_decref(d, "COLORSET_ACTLISTBOX", PyInt_FromLong(NEWT_COLORSET_ACTLISTBOX));
+    setitemstring_decref(d, "COLORSET_TEXTBOX", PyInt_FromLong(NEWT_COLORSET_TEXTBOX));
+    setitemstring_decref(d, "COLORSET_ACTTEXTBOX", PyInt_FromLong(NEWT_COLORSET_ACTTEXTBOX));
+    setitemstring_decref(d, "COLORSET_HELPLINE", PyInt_FromLong(NEWT_COLORSET_HELPLINE));
+    setitemstring_decref(d, "COLORSET_ROOTTEXT", PyInt_FromLong(NEWT_COLORSET_ROOTTEXT));
+    setitemstring_decref(d, "COLORSET_EMPTYSCALE", PyInt_FromLong(NEWT_COLORSET_EMPTYSCALE));
+    setitemstring_decref(d, "COLORSET_FULLSCALE", PyInt_FromLong(NEWT_COLORSET_FULLSCALE));
+    setitemstring_decref(d, "COLORSET_DISENTRY", PyInt_FromLong(NEWT_COLORSET_DISENTRY));
+    setitemstring_decref(d, "COLORSET_COMPACTBUTTON", PyInt_FromLong(NEWT_COLORSET_COMPACTBUTTON));
+    setitemstring_decref(d, "COLORSET_ACTSELLISTBOX", PyInt_FromLong(NEWT_COLORSET_ACTSELLISTBOX));
+    setitemstring_decref(d, "COLORSET_SELLISTBOX", PyInt_FromLong(NEWT_COLORSET_SELLISTBOX));
+
+    return MOD_SUCCESS_VAL(m);
 }

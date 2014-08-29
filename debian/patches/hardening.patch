@@ -1,0 +1,25 @@
+Author: Alastair McKinstry <mckinstry@debian.org>
+Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=658430
+Description: Add hardening flags to Makefile.in
+Last-Updated: 2013-05-16
+Forwarded: no
+
+Index: newt-0.52.15/Makefile.in
+===================================================================
+--- newt-0.52.15.orig/Makefile.in	2013-03-25 14:16:36.000000000 +0000
++++ newt-0.52.15/Makefile.in	2013-05-14 18:51:55.000000000 +0100
+@@ -89,10 +89,10 @@
+ 		PIFLAGS=`$$pyconfig --includes`; \
+ 		PLDFLAGS=`$$pyconfig --ldflags`; \
+ 		PLFLAGS=`$$pyconfig --libs`; \
+-		echo $(CC) $(SHCFLAGS) $(CPPFLAGS) $$PIFLAGS $$PCFLAGS -c -o $$ver/snackmodule.o snackmodule.c; \
+-		$(CC) $(SHCFLAGS) $(CPPFLAGS) $$PIFLAGS $$PCFLAGS -c -o $$ver/snackmodule.o snackmodule.c; \
+-		echo $(CC) --shared $$PLDFLAGS $$PLFLAGS $(LDFLAGS) -o $$ver/_snackmodule.so $$ver/snackmodule.o -L.  -lnewt $(LIBS); \
+-		$(CC) --shared $$PLDFLAGS $$PLFLAGS $(LDFLAGS) -o $$ver/_snackmodule.so $$ver/snackmodule.o -L.  -lnewt $(LIBS); \
++		echo $(CC) $(CFLAGS) $(SHCFLAGS) $(CPPFLAGS) $$PIFLAGS $$PCFLAGS -c -o $$ver/snackmodule.o snackmodule.c; \
++		$(CC) $(CFLAGS) $(SHCFLAGS) $(CPPFLAGS) $$PIFLAGS $$PCFLAGS -c -o $$ver/snackmodule.o snackmodule.c; \
++		echo $(CC) $(CFLAGS) --shared $$PLDFLAGS $$PLFLAGS $(LDFLAGS) -o $$ver/_snackmodule.so $$ver/snackmodule.o -L.  -lnewt $(LIBS); \
++		$(CC) $(CFLAGS) --shared $$PLDFLAGS $$PLFLAGS $(LDFLAGS) -o $$ver/_snackmodule.so $$ver/snackmodule.o -L.  -lnewt $(LIBS); \
+ 	done || :
+ 	touch $@
+ 
