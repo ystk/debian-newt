@@ -1,7 +1,7 @@
 AC_INIT([newt_pr.h])
 
 PACKAGE=newt
-VERSION=$(awk '/^Version: / {print $2}' $srcdir/newt.spec)
+VERSION=0.52.17
 SONAME=0.52
 
 AC_CONFIG_HEADER([config.h])
@@ -14,6 +14,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_GREP
+AC_SYS_LARGEFILE
 
 # Are we using GNU ld?
 AC_MSG_CHECKING([for GNU ld])
@@ -59,14 +60,14 @@ if test "x$with_python" = "xno"; then
   AC_MSG_RESULT([skipped])
   PYTHONVERS=
 else
-  PYTHONVERS=$(ls /usr/include/python2.*/Python.h 2> /dev/null | sed 's|/usr/include/\([[^/]]*\)/Python.h|\1|g' | tr '\n' ' ')
+  PYTHONVERS=$(ls /usr/include/python*/Python.h 2> /dev/null | sed 's|.*\(python[[0-9]]*\.[[0-9]]*\).*|\1|g' | tr '\n' ' ')
   AC_MSG_RESULT([$PYTHONVERS])
 fi
 AC_SUBST([PYTHONVERS])
 
 AC_ARG_WITH([tcl], [  --without-tcl           do not compile whiptcl.so])
 if test "x$with_tcl" = "xno"; then
-  WHIPTCLSO=
+  WHIPTCLLIB=
 else
   AC_MSG_CHECKING([for tcl configuration])
 
@@ -95,12 +96,14 @@ else
     AC_MSG_RESULT([found])
     . ${ac_cv_c_tclconfig}/tclConfig.sh
     AC_SUBST([TCL_LIB_FLAG])
-    WHIPTCLSO=whiptcl.so
+    WHIPTCLLIB=whiptcl
+    # needed with tcl8.6
+    CPPFLAGS="$CPPFLAGS -DUSE_INTERP_RESULT"
   else
     AC_MSG_RESULT([NOT found])
   fi
 fi
-AC_SUBST([WHIPTCLSO])
+AC_SUBST([WHIPTCLLIB])
 
 AC_ARG_WITH([gpm-support], [  --with-gpm-support      compile with GPM support])
 

@@ -245,6 +245,8 @@ newtComponent newtRunForm(newtComponent form);		/* obsolete */
 void newtFormRun(newtComponent co, struct newtExitStruct * es);
 void newtDrawForm(newtComponent form);
 void newtFormAddHotKey(newtComponent co, int key);
+int newtFormGetScrollPosition(newtComponent co);
+void newtFormSetScrollPosition(newtComponent co, int position);
 
 typedef int (*newtEntryFilter)(newtComponent entry, void * data, int ch,
 			       int cursor);
@@ -255,6 +257,8 @@ void newtEntrySetFilter(newtComponent co, newtEntryFilter filter, void * data);
 char * newtEntryGetValue(newtComponent co);
 void newtEntrySetFlags(newtComponent co, int flags, enum newtFlagsSense sense);
 void newtEntrySetColors(newtComponent co, int normal, int disabled);
+int newtEntryGetCursorPosition(newtComponent co);
+void newtEntrySetCursorPosition(newtComponent co, int position);
 
 newtComponent newtScale(int left, int top, int width, long long fullValue);
 void newtScaleSet(newtComponent co, unsigned long long amount);
@@ -262,6 +266,9 @@ void newtScaleSetColors(newtComponent co, int empty, int full);
 
 void newtComponentAddCallback(newtComponent co, newtCallback f, void * data);
 void newtComponentTakesFocus(newtComponent co, int val);
+
+void newtComponentGetPosition(newtComponent co, int * left, int * top);
+void newtComponentGetSize(newtComponent co, int * width, int * height);
 
 /* This callback is called when a component is destroyed. */
 void newtComponentAddDestroyCallback(newtComponent co,
